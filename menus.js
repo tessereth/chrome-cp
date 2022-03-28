@@ -13,7 +13,7 @@ const copyAddressAsHTML = async (url, text) => {
             } else if (m = LINEAR_RE.exec(url)) {
                 text = m[1]
             } else {
-                text = url
+                text = document.title
             }
         }
 
