@@ -3,15 +3,21 @@ const COPY_SELECTION_AS_HTML = "copy-selection-as-html"
 
 // WARNING: This is run in the page context. It doesn't have access to external variables.
 const copyAddressAsHTML = async (url, text) => {
-    const GITHUB_RE = new RegExp('^https://github.com/\\w+/(\\w+)/pull/(\\d+)')
-    const LINEAR_RE = new RegExp('^https://linear.app/\\w+/issue/(\\w+-\\d+)')
+    const GITHUB_RE = new RegExp('^https://github.com/(?<org>\\w+)/(?<repo>\\w+)/(pull|issues)/(?<number>\\d+)')
+    const LINEAR_RE = new RegExp('^https://linear.app/\\w+/issue/(?<issue>\\w+-\\d+)')
+
+    const IMPLIED_GITHUB_ORG = 'buildkite'
 
     try {
         if (!text) {
             if (m = GITHUB_RE.exec(url)) {
-                text = `${m[1]}#${m[2]}`
+                if (m.groups.org === IMPLIED_GITHUB_ORG) {
+                    text = `${m.groups.repo}#${m.groups.number}`
+                } else {
+                    text = `${m.groups.org}/${m.groups.repo}#${m.groups.number}`
+                }
             } else if (m = LINEAR_RE.exec(url)) {
-                text = m[1]
+                text = m.groups.issue
             } else {
                 text = document.title
             }
