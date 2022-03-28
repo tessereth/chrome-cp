@@ -3,8 +3,8 @@ const COPY_SELECTION_AS_HTML = "copy-selection-as-html"
 
 // WARNING: This is run in the page context. It doesn't have access to external variables.
 const copyAddressAsHTML = async (url, text) => {
-    const GITHUB_RE = new RegExp('^https://github.com/buildkite/(\\w+)/pull/(\\d+)')
-    const LINEAR_RE = new RegExp('^https://linear.app/buildkite/issue/(\\w+-\\d+)')
+    const GITHUB_RE = new RegExp('^https://github.com/\\w+/(\\w+)/pull/(\\d+)')
+    const LINEAR_RE = new RegExp('^https://linear.app/\\w+/issue/(\\w+-\\d+)')
 
     try {
         if (!text) {
