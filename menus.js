@@ -1,41 +1,28 @@
 const COPY_AS_HTML = "copy-as-html"
 const COPY_SELECTION_AS_HTML = "copy-selection-as-html"
 
-// WARNING: This is run in the page context. It doesn't have access to external variables.
+const GITHUB_RE = new RegExp('^https://github.com/(?<org>\\w+)/(?<repo>\\w+)/(pull|issues)/(?<number>\\d+)')
+const LINEAR_RE = new RegExp('^https://linear.app/\\w+/issue/(?<issue>\\w+-\\d+)')
+
+const IMPLIED_GITHUB_ORG = 'buildkite'
+
+// WARNING: This function is run in the page context. It doesn't have access to external variables.
+// Unfortunately you can't access the clipboard from the service worker context so we have to do it this way.
 const copyAddressAsHTML = async (url, text) => {
-    const GITHUB_RE = new RegExp('^https://github.com/(?<org>\\w+)/(?<repo>\\w+)/(pull|issues)/(?<number>\\d+)')
-    const LINEAR_RE = new RegExp('^https://linear.app/\\w+/issue/(?<issue>\\w+-\\d+)')
-
-    const IMPLIED_GITHUB_ORG = 'buildkite'
-
     try {
-        if (!text) {
-            if (m = GITHUB_RE.exec(url)) {
-                if (m.groups.org === IMPLIED_GITHUB_ORG) {
-                    text = `${m.groups.repo}#${m.groups.number}`
-                } else {
-                    text = `${m.groups.org}/${m.groups.repo}#${m.groups.number}`
-                }
-            } else if (m = LINEAR_RE.exec(url)) {
-                text = m.groups.issue
-            } else {
-                text = document.title
-            }
-        }
-
         const clipboardItem = new ClipboardItem({
             "text/plain": new Blob([`${text} <${url}>`], { type: "text/plain" }),
             "text/html": new Blob([`<a href="${url}">${text}</a>`], { type: "text/html" })
         })
         await navigator.clipboard.write([clipboardItem])
-        console.log("Copied to clipboard")
+        console.debug("Copied to clipboard")
     } catch(err) {
         console.warn(err)
     }
 }
 
 const onMenuClicked = async (info, tab) => {
-    console.log("item " + info.menuItemId + " was clicked")
+    console.debug("item " + info.menuItemId + " was clicked")
 
     const url = info.pageUrl
 
@@ -43,7 +30,7 @@ const onMenuClicked = async (info, tab) => {
         chrome.scripting.executeScript({
             target: { tabId: tab.id },
             func: copyAddressAsHTML,
-            args: [url]
+            args: [url, defaultText(info, tab)]
         })
     } else if (info.menuItemId === COPY_SELECTION_AS_HTML) {
         chrome.scripting.executeScript({
@@ -51,6 +38,22 @@ const onMenuClicked = async (info, tab) => {
             func: copyAddressAsHTML,
             args: [url, info.selectionText]
         })
+    }
+}
+
+const defaultText = (info, tab) => {
+    const url = info.pageUrl
+
+    if (m = GITHUB_RE.exec(url)) {
+        if (m.groups.org === IMPLIED_GITHUB_ORG) {
+            return `${m.groups.repo}#${m.groups.number}`
+        } else {
+            return `${m.groups.org}/${m.groups.repo}#${m.groups.number}`
+        }
+    } else if (m = LINEAR_RE.exec(url)) {
+        return m.groups.issue
+    } else {
+        return tab.title || ''
     }
 }
 
