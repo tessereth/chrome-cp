@@ -1,0 +1,19 @@
+{
+  "name": "URL copy",
+  "description": "Copy useful urls as HTML",
+  "version": "1.0",
+  "manifest_version": 3,
+  "permissions": [
+    "activeTab",
+    "clipboardWrite",
+    "contextMenus",
+    "scripting"
+  ],
+  "background": {
+    "service_worker": "menus.js"
+  },
+  "icons": {
+    "16": "icon-16.png",
+    "128": "icon-128.png"
+  }
+}
