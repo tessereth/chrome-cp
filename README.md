@@ -5,7 +5,8 @@ This is useful for pasting links to pages with a useful name rather than as a ra
 
 ## Installation
 
-TODO
+Clone the repo and load the extension in Chrome
+(see https://developer.chrome.com/docs/extensions/mv3/getstarted/#unpacked).
 
 ## Usage
 
